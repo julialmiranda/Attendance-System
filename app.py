@@ -57,7 +57,7 @@ def rfid():
     try:
         cursor.execute("""
             SELECT id, nome, matricula, tag_rfid, acesso, ativo, status_matricula
-            FROM colaboradores
+            FROM alunos
             WHERE tag_rfid = %s
         """, (tag_rfid,))
 
@@ -110,7 +110,7 @@ def rfid():
         cursor.execute("""
             SELECT id, entrada
             FROM presencas
-            WHERE colaborador_id = %s
+            WHERE aluno_id = %s
             AND data_aula = CURRENT_DATE
             AND status = 'ABERTA'
             ORDER BY entrada DESC
@@ -122,7 +122,7 @@ def rfid():
         if not presenca_aberta:
             cursor.execute("""
                 INSERT INTO presencas
-                (colaborador_id, nome, matricula, tag_rfid, entrada, status)
+                (aluno_id, nome, matricula, tag_rfid, entrada, status)
                 VALUES (%s, %s, %s, %s, %s, 'ABERTA')
             """, (aluno_id, nome, matricula, tag_rfid, agora))
 
@@ -254,14 +254,14 @@ def listar_presencas():
         for row in dados
     ])
 
-@app.route("/colaboradores", methods=["GET"])
-def listar_colaboradores():
+@app.route("/alunos", methods=["GET"])
+def listar_alunos():
     conn = connect_db()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT id, nome, matricula, curso, tag_rfid, acesso, ativo, status_matricula
-        FROM colaboradores
+        FROM alunos
         ORDER BY id
     """)
 
@@ -283,8 +283,8 @@ def listar_colaboradores():
         for row in dados
     ])
 
-@app.route("/colaboradores", methods=["POST"])
-def criar_colaborador():
+@app.route("/alunos", methods=["POST"])
+def criar_aluno():
     dados = request.get_json()
 
     nome = dados.get("nome")
@@ -303,7 +303,7 @@ def criar_colaborador():
 
     try:
         cursor.execute("""
-            INSERT INTO colaboradores
+            INSERT INTO alunos
             (nome, matricula, curso, tag_rfid, acesso, ativo, status_matricula)
             VALUES (%s, %s, %s, %s, TRUE, TRUE, 'ATIVA')
             RETURNING id
@@ -314,7 +314,7 @@ def criar_colaborador():
 
         return jsonify({
             "status": "CRIADO",
-            "mensagem": "Colaborador cadastrado com sucesso",
+            "mensagem": "Aluno cadastrado com sucesso",
             "id": novo_id
         }), 201
 
@@ -326,8 +326,8 @@ def criar_colaborador():
         cursor.close()
         conn.close()
 
-@app.route("/colaboradores/<int:id>", methods=["GET", "DELETE"])
-def colaborador_por_id(id):
+@app.route("/alunos/<int:id>", methods=["GET", "DELETE"])
+def aluno_por_id(id):
     conn = connect_db()
     cursor = conn.cursor()
 
@@ -336,32 +336,32 @@ def colaborador_por_id(id):
             cursor.execute("""
                 SELECT id, nome, matricula, curso, tag_rfid,
                        acesso, ativo, status_matricula
-                FROM colaboradores
+                FROM alunos
                 WHERE id = %s
             """, (id,))
 
-            colaborador = cursor.fetchone()
+            aluno = cursor.fetchone()
 
-            if not colaborador:
+            if not aluno:
                 return jsonify({
                     "status": "ERRO",
-                    "mensagem": "Colaborador não encontrado"
+                    "mensagem": "Aluno não encontrado"
                 }), 404
 
             return jsonify({
-                "id": colaborador[0],
-                "nome": colaborador[1],
-                "matricula": colaborador[2],
-                "curso": colaborador[3],
-                "tag_rfid": colaborador[4],
-                "acesso": colaborador[5],
-                "ativo": colaborador[6],
-                "status_matricula": colaborador[7]
+                "id": aluno[0],
+                "nome": aluno[1],
+                "matricula": aluno[2],
+                "curso": aluno[3],
+                "tag_rfid": aluno[4],
+                "acesso": aluno[5],
+                "ativo": aluno[6],
+                "status_matricula": aluno[7]
             })
 
         if request.method == "DELETE":
             cursor.execute("""
-                DELETE FROM colaboradores
+                DELETE FROM alunos
                 WHERE id = %s
                 RETURNING id
             """, (id,))
@@ -371,21 +371,21 @@ def colaborador_por_id(id):
             if not resultado:
                 return jsonify({
                     "status": "ERRO",
-                    "mensagem": "Colaborador não encontrado"
+                    "mensagem": "Aluno não encontrado"
                 }), 404
 
             conn.commit()
 
             return jsonify({
                 "status": "SUCESSO",
-                "mensagem": "Colaborador removido"
+                "mensagem": "Aluno removido"
             })
 
     finally:
         cursor.close()
         conn.close()
 
-@app.route("/colaboradores/<int:id>/status-matricula", methods=["PUT"])
+@app.route("/alunos/<int:id>/status-matricula", methods=["PUT"])
 def alterar_status_matricula(id):
     dados = request.get_json()
     novo_status = dados.get("status_matricula")
@@ -395,7 +395,7 @@ def alterar_status_matricula(id):
 
     try:
         cursor.execute("""
-            UPDATE colaboradores
+            UPDATE alunos
             SET status_matricula = %s
             WHERE id = %s
             RETURNING id, nome, status_matricula
@@ -406,7 +406,7 @@ def alterar_status_matricula(id):
         if not resultado:
             return jsonify({
                 "status": "ERRO",
-                "mensagem": "Colaborador não encontrado"
+                "mensagem": "Aluno não encontrado"
             }), 404
 
         conn.commit()
@@ -426,7 +426,7 @@ def alterar_status_matricula(id):
         cursor.close()
         conn.close()
 
-@app.route("/colaboradores/<int:id>/acesso", methods=["PUT"])
+@app.route("/alunos/<int:id>/acesso", methods=["PUT"])
 def alterar_acesso(id):
     dados = request.get_json()
     acesso = dados.get("acesso")
@@ -436,7 +436,7 @@ def alterar_acesso(id):
 
     try:
         cursor.execute("""
-            UPDATE colaboradores
+            UPDATE alunos
             SET acesso = %s
             WHERE id = %s
             RETURNING id, nome, acesso
@@ -447,7 +447,7 @@ def alterar_acesso(id):
         if not resultado:
             return jsonify({
                 "status": "ERRO",
-                "mensagem": "Colaborador não encontrado"
+                "mensagem": "Aluno não encontrado"
             }), 404
 
         conn.commit()
@@ -467,7 +467,7 @@ def alterar_acesso(id):
         cursor.close()
         conn.close()
 
-@app.route("/colaboradores/<int:id>/ativo", methods=["PUT"])
+@app.route("/alunos/<int:id>/ativo", methods=["PUT"])
 def alterar_ativo(id):
     dados = request.get_json()
     ativo = dados.get("ativo")
@@ -477,7 +477,7 @@ def alterar_ativo(id):
 
     try:
         cursor.execute("""
-            UPDATE colaboradores
+            UPDATE alunos
             SET ativo = %s
             WHERE id = %s
             RETURNING id, nome, ativo
@@ -488,7 +488,7 @@ def alterar_ativo(id):
         if not resultado:
             return jsonify({
                 "status": "ERRO",
-                "mensagem": "Colaborador não encontrado"
+                "mensagem": "Aluno não encontrado"
             }), 404
 
         conn.commit()
@@ -513,8 +513,8 @@ def dashboard():
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) FROM colaboradores")
-    total_colaboradores = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM alunos")
+    total_alunos = cursor.fetchone()[0]
 
     cursor.execute("""
         SELECT COUNT(*)
@@ -541,21 +541,21 @@ def dashboard():
     conn.close()
 
     return jsonify({
-        "total_colaboradores": total_colaboradores,
+        "total_alunos": total_alunos,
         "presencas_hoje": presencas_hoje,
         "acessos_liberados": acessos_liberados,
         "acessos_negados": acessos_negados
     })
 
-@app.route("/colaboradores/<int:id>/historico", methods=["GET"])
-def historico_colaborador(id):
+@app.route("/alunos/<int:id>/historico", methods=["GET"])
+def historico_alunos(id):
     conn = connect_db()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT data_aula, entrada, saida, tempo_permanencia_minutos, total_presencas
         FROM presencas
-        WHERE colaborador_id = %s
+        WHERE aluno_id = %s
         ORDER BY data_aula DESC
     """, (id,))
 
@@ -581,9 +581,9 @@ def faltosos():
 
     cursor.execute("""
         SELECT c.id, c.nome, c.matricula
-        FROM colaboradores c
+        FROM alunos c
         LEFT JOIN presencas p
-        ON c.id = p.colaborador_id
+        ON c.id = p.aluno_id
         AND p.data_aula = CURRENT_DATE
         WHERE p.id IS NULL
     """)

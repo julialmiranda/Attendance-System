@@ -1,9 +1,9 @@
 DROP TABLE IF EXISTS logs_acesso CASCADE;
 DROP TABLE IF EXISTS presencas CASCADE;
-DROP TABLE IF EXISTS colaboradores CASCADE;
+DROP TABLE IF EXISTS alunos CASCADE;
 DROP TABLE IF EXISTS usuarios_sistema CASCADE;
 
-CREATE TABLE colaboradores (
+CREATE TABLE alunos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     matricula VARCHAR(20) UNIQUE NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE logs_acesso (
 
 CREATE TABLE presencas (
     id SERIAL PRIMARY KEY,
-    colaborador_id INTEGER REFERENCES colaboradores(id),
+    aluno_id INTEGER REFERENCES alunos(id),
     nome VARCHAR(100),
     matricula VARCHAR(20),
     tag_rfid VARCHAR(50),
@@ -86,7 +86,7 @@ CREATE TABLE usuarios_sistema (
 INSERT INTO usuarios_sistema (usuario, senha, perfil)
 VALUES ('admin', '123456', 'admin');
 
-INSERT INTO colaboradores
+INSERT INTO alunos
 (nome, matricula, curso, tag_rfid, acesso, ativo, status_matricula)
 VALUES
 ('Julia', '001', 'Sistemas de Informação', '553307625663', TRUE, TRUE, 'ATIVA'),
@@ -94,8 +94,8 @@ VALUES
 ('Aluno Trancado', '003', 'Sistemas de Informação', '999999999999', TRUE, TRUE, 'TRANCADA'),
 ('Aluno Formado', '004', 'Sistemas de Informação', '888888888888', TRUE, TRUE, 'FORMADO');
 
-UPDATE colaboradores SET status_matricula = 'TRANCADA' WHERE tag_rfid = '999999999999';
+UPDATE alunos SET status_matricula = 'TRANCADA' WHERE tag_rfid = '999999999999';
 
-SELECT * FROM colaboradores;
+SELECT * FROM alunos;
 
 SELECT * FROM logs_acesso ORDER BY id DESC;

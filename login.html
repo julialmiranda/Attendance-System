@@ -9,13 +9,14 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --azul:       #003F8C;
-      --azul-med:   #0057BF;
-      --azul-claro: #E8F0FC;
+      /* Tons de Cinza substituindo o Azul */
+      --azul:       #334155; /* Cinza-escuro principal */
+      --azul-med:   #475569; /* Cinza intermediário para hovers */
+      --azul-claro: #F1F5F9; /* Cinza bem claro para fundos leves */
       --borda:      #E2E8F0;
-      --bg:         #F0F4FA;
+      --bg:         #F8FAFC;
       --surface:    #FFFFFF;
-      --texto:      #1A202C;
+      --texto:      #1E293B;
       --sub:        #64748B;
       --muted:      #94A3B8;
       --verde:      #1A8754;
@@ -34,7 +35,8 @@
     .left-panel {
       width: 480px;
       flex-shrink: 0;
-      background: linear-gradient(155deg, #002a5e 0%, #003F8C 45%, #0057BF 100%);
+      /* Ajustado de azul para um gradiente cinza escuro sofisticado */
+      background: linear-gradient(155deg, #1E293B 0%, #334155 45%, #475569 100%);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -128,7 +130,7 @@
     .feature-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: #60A5FA;
+      background: #94A3B8; /* Alterado de azul claro para cinza sutil */
       flex-shrink: 0;
     }
 
@@ -199,7 +201,7 @@
 
     .input-wrap input:focus {
       border-color: var(--azul-med);
-      box-shadow: 0 0 0 3px rgba(0,87,191,.12);
+      box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.12); /* Sombra de foco alterada para cinza transparente */
     }
 
     .input-wrap input.error { border-color: var(--vermelho); }
@@ -242,7 +244,7 @@
       display: flex; align-items: center; justify-content: center; gap: 8px;
     }
 
-    .btn-login:hover { background: var(--azul-med); box-shadow: 0 6px 20px rgba(0,63,140,.3); transform: translateY(-1px); }
+    .btn-login:hover { background: var(--azul-med); box-shadow: 0 6px 20px rgba(51, 65, 85, 0.3); transform: translateY(-1px); }
     .btn-login:active { transform: translateY(0); }
     .btn-login:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
@@ -287,7 +289,7 @@
     }
 
     .quick-btn:hover {
-      border-color: #C5D8F5;
+      border-color: #CBD5E1; /* Borda no hover atualizada de azul para cinza médio */
       background: var(--azul-claro);
     }
 
@@ -332,7 +334,6 @@
 </head>
 <body>
 
-<!-- Painel esquerdo -->
 <div class="left-panel">
   <div class="left-logo">
     <div class="left-logo-icon">
@@ -353,17 +354,16 @@
   </div>
 </div>
 
-<!-- Painel direito -->
 <div class="right-panel">
   <div class="login-box">
-    <h2>Bem-vindo de volta 👋</h2>
-    <p>Acesse com suas credenciais institucionais para continuar.</p>
+    <h2>Bem-vindo!</h2>
+    <p>Insira suas credenciais para continuar.</p>
 
     <div class="field">
-      <label>E-mail institucional</label>
+      <label>Usuário</label>
       <div class="input-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        <input type="text" id="input-email" placeholder="professor@atitus.edu.br" autocomplete="username" />
+        <input type="text" id="input-email" placeholder="Usuário" autocomplete="username" />
       </div>
     </div>
 
@@ -371,7 +371,7 @@
       <label>Senha</label>
       <div class="input-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <input type="password" id="input-senha" placeholder="••••••••" autocomplete="current-password" />
+        <input type="password" id="input-senha" placeholder="Senha" autocomplete="current-password" />
         <button class="eye-btn" type="button" onclick="toggleSenha()" title="Mostrar/ocultar senha">
           <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
@@ -385,9 +385,7 @@
       <svg id="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
     </button>
 
-    <div class="divider">ou acesso rápido por perfil</div>
-
-    <div class="footer-note">Atitus Educação © 2025 · Todos os direitos reservados</div>
+    <div class="footer-note">Atitus Educação © 2026 · Todos os direitos reservados</div>
   </div>
 </div>
 
