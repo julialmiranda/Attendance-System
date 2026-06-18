@@ -7,7 +7,8 @@ CREATE TABLE alunos (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     matricula VARCHAR(20) UNIQUE NOT NULL,
-    curso VARCHAR(100),
+    curso VARCHAR(100) NOT NULL,
+    professor_id VARCHAR(50) NOT NULL,
     tag_rfid VARCHAR(50) UNIQUE NOT NULL,
     acesso BOOLEAN DEFAULT TRUE,
     ativo BOOLEAN DEFAULT TRUE,
@@ -21,6 +22,12 @@ CREATE TABLE alunos (
         'CANCELADA',
         'TRANSFERIDO',
         'EVADIDO'
+    )),
+
+    CONSTRAINT chk_professor_id
+    CHECK (professor_id IN (
+        'tiago',
+        'fernando'
     ))
 );
 
@@ -53,7 +60,7 @@ CREATE TABLE logs_acesso (
 
 CREATE TABLE presencas (
     id SERIAL PRIMARY KEY,
-    aluno_id INTEGER REFERENCES alunos(id),
+    aluno_id INTEGER REFERENCES alunos(id) ON DELETE CASCADE,
     nome VARCHAR(100),
     matricula VARCHAR(20),
     tag_rfid VARCHAR(50),
@@ -80,21 +87,39 @@ CREATE TABLE usuarios_sistema (
     id SERIAL PRIMARY KEY,
     usuario VARCHAR(50) UNIQUE NOT NULL,
     senha VARCHAR(255) NOT NULL,
-    perfil VARCHAR(30) DEFAULT 'admin'
+    perfil VARCHAR(30) DEFAULT 'admin',
+    professor_id VARCHAR(50),
+    curso VARCHAR(100),
+
+    CONSTRAINT chk_usuario_professor_id
+    CHECK (
+        professor_id IS NULL OR professor_id IN (
+            'tiago',
+            'fernando'
+        )
+    )
 );
 
-INSERT INTO usuarios_sistema (usuario, senha, perfil)
-VALUES ('admin', '123456', 'admin');
+INSERT INTO usuarios_sistema
+(usuario, senha, perfil, professor_id, curso)
+VALUES
+('admin', '123456', 'admin', NULL, NULL),
+('tiago', '123456', 'professor', 'tiago', 'Ciência da Computação'),
+('fernando', '123456', 'professor', 'fernando', 'Agronomia');
 
 INSERT INTO alunos
-(nome, matricula, curso, tag_rfid, acesso, ativo, status_matricula)
+(nome, matricula, curso, professor_id, tag_rfid, acesso, ativo, status_matricula)
 VALUES
-('Julia', '001', 'Sistemas de Informação', '553307625663', TRUE, TRUE, 'ATIVA'),
-('Maria Souza', '002', 'Sistemas de Informação', '999999999999', TRUE, TRUE, 'TRANCADA'),
-('Carlos Oliveira', '003', 'Ciência da Computação', '888888888888', TRUE, TRUE, 'FORMADO');
+('Julia', '001', 'Ciência da Computação', 'tiago', '553307625663', TRUE, TRUE, 'ATIVA'),
+('Maria Souza', '002', 'Ciência da Computação', 'tiago', '999999999999', TRUE, TRUE, 'TRANCADA'),
+('Carlos Oliveira', '003', 'Ciência da Computação', 'tiago', '888888888888', TRUE, TRUE, 'FORMADO'),
 
-UPDATE alunos SET status_matricula = 'TRANCADA' WHERE tag_rfid = '999999999999';
+('Ana Costa', '004', 'Agronomia', 'fernando', '444444444444', TRUE, TRUE, 'ATIVA'),
+('Pedro Santos', '005', 'Agronomia', 'fernando', '555555555555', TRUE, TRUE, 'ATIVA'),
+('Luiza Martins', '006', 'Agronomia', 'fernando', '666666666666', TRUE, TRUE, 'ATIVA');
 
-SELECT * FROM alunos;
+SELECT id, nome, matricula, curso, professor_id, tag_rfid, status_matricula
+FROM alunos
+ORDER BY id;
 
 SELECT * FROM logs_acesso ORDER BY id DESC;

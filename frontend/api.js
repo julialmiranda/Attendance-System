@@ -18,7 +18,7 @@ async function request(endpoint, options = {}) {
 }
 
 const api = {
-  listarAlunos: () => request('/alunos'),
+  listarAlunos: (professorId) => request(`/alunos?professor_id=${professorId}`),
   criarAluno: (aluno) => request('/alunos', {
     method: 'POST',
     body: JSON.stringify(aluno)
@@ -53,7 +53,7 @@ const api = {
     body: JSON.stringify({ tag_rfid })
   }),
 
-  listarLogs: () => request('/logs'),
+  listarLogs: (professorId) => request(`/logs?professor_id=${professorId}`),
   listarPresencas: () => request('/presencas'),
   buscarDashboard: () => request('/dashboard'),
   listarFaltosos: () => request('/faltosos'),

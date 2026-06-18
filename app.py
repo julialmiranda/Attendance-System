@@ -232,17 +232,43 @@ def rfid():
 
 @app.route("/logs", methods=["GET"])
 def listar_logs():
+    professor_id = request.args.get("professor_id")
+
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, tipo, nome, matricula, tag_rfid, status, mensagem, timestamp
-        FROM logs_acesso
-        ORDER BY id DESC
+    query = """
+        SELECT
+            l.id,
+            l.tipo,
+            l.nome,
+            l.matricula,
+            l.tag_rfid,
+            l.status,
+            l.mensagem,
+            l.timestamp
+        FROM logs_acesso l
+        LEFT JOIN alunos a
+            ON a.tag_rfid = l.tag_rfid
+    """
+
+    params = []
+
+    if professor_id:
+        query += """
+            WHERE a.professor_id = %s
+        """
+        params.append(professor_id)
+
+    query += """
+        ORDER BY l.id DESC
         LIMIT 20
-    """)
+    """
+
+    cursor.execute(query, params)
 
     logs = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -294,15 +320,18 @@ def listar_presencas():
 
 @app.route("/alunos", methods=["GET"])
 def listar_alunos():
+    professor_id = request.args.get("professor_id")
+
     conn = connect_db()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    query = """
         SELECT
             a.id,
             a.nome,
             a.matricula,
             a.curso,
+            a.professor_id,
             a.tag_rfid,
             a.acesso,
             a.ativo,
@@ -313,17 +342,29 @@ def listar_alunos():
         LEFT JOIN presencas p
             ON p.aluno_id = a.id
             AND p.status = 'FECHADA'
+    """
+
+    params = []
+
+    if professor_id:
+        query += " WHERE a.professor_id = %s "
+        params.append(professor_id)
+
+    query += """
         GROUP BY
             a.id,
             a.nome,
             a.matricula,
             a.curso,
+            a.professor_id,
             a.tag_rfid,
             a.acesso,
             a.ativo,
             a.status_matricula
         ORDER BY a.id
-""")
+    """
+
+    cursor.execute(query, params)
 
     dados = cursor.fetchall()
     cursor.close()
@@ -332,11 +373,9 @@ def listar_alunos():
     resultado = []
 
     for row in dados:
-        total_aulas = int(row[9])
-        presencas = int(row[8])
-
+        total_aulas = int(row[10])
+        presencas = int(row[9])
         faltas = max(0, total_aulas - presencas)
-
         percentual = round((presencas / total_aulas) * 100) if total_aulas > 0 else 0
 
         resultado.append({
@@ -344,10 +383,11 @@ def listar_alunos():
             "nome": row[1],
             "matricula": row[2],
             "curso": row[3],
-            "tag_rfid": row[4],
-            "acesso": row[5],
-            "ativo": row[6],
-            "status_matricula": row[7],
+            "professor_id": row[4],
+            "tag_rfid": row[5],
+            "acesso": row[6],
+            "ativo": row[7],
+            "status_matricula": row[8],
             "total_aulas": total_aulas,
             "presencas": presencas,
             "faltas": faltas,
@@ -363,12 +403,13 @@ def criar_aluno():
     nome = dados.get("nome")
     matricula = dados.get("matricula")
     curso = dados.get("curso")
+    professor_id = dados.get("professor_id")
     tag_rfid = dados.get("tag_rfid")
 
-    if not nome or not matricula or not tag_rfid:
+    if not nome or not matricula or not tag_rfid or not curso or not professor_id:
         return jsonify({
             "status": "ERRO",
-            "mensagem": "Nome, matrícula e tag_rfid são obrigatórios"
+            "mensagem": "Nome, matrícula, curso, professor_id e tag_rfid são obrigatórios"
         }), 400
 
     conn = connect_db()
@@ -377,10 +418,10 @@ def criar_aluno():
     try:
         cursor.execute("""
             INSERT INTO alunos
-            (nome, matricula, curso, tag_rfid, acesso, ativo, status_matricula)
-            VALUES (%s, %s, %s, %s, TRUE, TRUE, 'ATIVA')
+            (nome, matricula, curso, professor_id, tag_rfid, acesso, ativo, status_matricula)
+            VALUES (%s, %s, %s, %s, %s, TRUE, TRUE, 'ATIVA')
             RETURNING id
-        """, (nome, matricula, curso, tag_rfid))
+        """, (nome, matricula, curso, professor_id, tag_rfid))
 
         novo_id = cursor.fetchone()[0]
         conn.commit()
@@ -407,7 +448,7 @@ def aluno_por_id(id):
     try:
         if request.method == "GET":
             cursor.execute("""
-                SELECT id, nome, matricula, curso, tag_rfid,
+                SELECT id, nome, matricula, curso, professor_id, tag_rfid,
                        acesso, ativo, status_matricula
                 FROM alunos
                 WHERE id = %s
@@ -426,10 +467,11 @@ def aluno_por_id(id):
                 "nome": aluno[1],
                 "matricula": aluno[2],
                 "curso": aluno[3],
-                "tag_rfid": aluno[4],
-                "acesso": aluno[5],
-                "ativo": aluno[6],
-                "status_matricula": aluno[7]
+                "professor_id": aluno[4],
+                "tag_rfid": aluno[5],
+                "acesso": aluno[6],
+                "ativo": aluno[7],
+                "status_matricula": aluno[8]
             })
 
         if request.method == "DELETE":

@@ -1,23 +1,25 @@
 const PROFESSORES = {
   tiago: {
+    id: 'tiago',
     nome: 'Prof. Tiago',
     email: 'tiago',
     curso: 'Ciência da Computação',
     sigla: 'CC',
     badgeColor: 'background:rgba(96,165,250,.25);color:#93C5FD',
-    materia: 'Fundamentos de Redes',
-    semestre: '2025/1',
+    materia: 'Hardware Architecture',
+    semestre: '2026/1',
     codigoCurso: 'CC2023'
   },
 
   fernando: {
+    id: 'fernando',
     nome: 'Prof. Fernando',
     email: 'fernando',
     curso: 'Agronomia',
     sigla: 'AG',
     badgeColor: 'background:rgba(34,197,94,.2);color:#86EFAC',
     materia: 'Fitossanidade',
-    semestre: '2025/1',
+    semestre: '2026/1',
     codigoCurso: 'AG2023'
   }
 };
@@ -55,7 +57,7 @@ async function carregarAlunosBanco() {
 
 async function carregarLogsRFID() {
   try {
-    const logs = await api.listarLogs();
+    const logs = await api.listarLogs(profAtual.id);
 
     const container = document.getElementById("rfid-log");
 
@@ -245,8 +247,6 @@ function abrirModalAluno() {
   editandoId = null;
   document.getElementById('modal-aluno-title').textContent = 'Novo Aluno';
   ['aluno-mat','aluno-nome','aluno-rfid'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('aluno-total').value='40';
-  document.getElementById('aluno-presencas').value='0';
   abrirModal('modal-aluno');
 }
 
@@ -257,8 +257,6 @@ function editarAluno(id) {
   document.getElementById('aluno-mat').value=a.matricula;
   document.getElementById('aluno-nome').value=a.nome;
   document.getElementById('aluno-rfid').value=a.rfid;
-  document.getElementById('aluno-total').value=a.totalAulas;
-  document.getElementById('aluno-presencas').value=a.presencas;
   abrirModal('modal-aluno');
 }
 
@@ -290,21 +288,23 @@ async function salvarAluno() {
     return;
   }
 
-    await api.criarAluno({
+    const novoAluno = {
       nome,
       matricula: mat,
       curso: profAtual.curso,
+      professor_id: profAtual.id,
       tag_rfid: rfid
-    });
+    };
+
+    await api.criarAluno(novoAluno);
 
     toast('Aluno cadastrado!', 'success');
-
     fecharModal('modal-aluno');
 
-    const dados = await carregarAlunosBanco();
-    alunos = dados.map(mapearAlunoBackend);
+    await carregarDadosAlunos();
 
     renderTabela();
+    atualizarStats();
 
   } catch (erro) {
     toast(erro.message, 'error');
@@ -337,67 +337,27 @@ function mapearAlunoBackend(c) {
 }
 
 async function carregarDadosAlunos() {
-  const alunosBanco = await api.listarAlunos();
-  const presencasBanco = await api.listarPresencas();
-
+  const alunosBanco = await api.listarAlunos(profAtual.id);
   alunos = alunosBanco.map(aluno => {
-    const presencasDoAluno = presencasBanco.filter(
-      p => p.matricula === aluno.matricula
-    );
-
-  const totalAulas = aluno.total_aulas;
-  const presencas = aluno.presencas;
-  const faltas = aluno.faltas;
-  const pct = aluno.percentual_frequencia;
-
-  const status =
-    pct >= 75
-      ? "regular"
-      : pct >= 60
-        ? "estavel"
-        : "critico";
-
-  return {
-    id: aluno.id,
-    nome: aluno.nome,
-    matricula: aluno.matricula,
-    rfid: aluno.tag_rfid,
-    status_matricula: aluno.status_matricula,
-
-    totalAulas,
-    presencas,
-    faltas,
-
-    faltasEfetivas: faltas,
-
-    pct,
-    status,
-  };
-});
-};
-
-
-    /*const totalAulas = 4;
-    const presencas = presencasDoAluno.reduce(
-      (soma, p) => soma + (p.total_presencas || 0),
-      0
-    );
-
-    const faltas = Math.max(0, totalAulas - presencas);
-    const pct = totalAulas > 0
-      ? Math.round((presencas / totalAulas) * 100)
-      : 0;
+    const totalAulas = aluno.total_aulas;
+    const presencas = aluno.presencas;
+    const faltas = aluno.faltas;
+    const pct = aluno.percentual_frequencia;
 
     const status =
-      pct >= 75 ? 'regular' :
-      pct >= 60 ? 'estavel' :
-      'critico';
+      pct >= 75
+        ? "regular"
+        : pct >= 60
+          ? "estavel"
+          : "critico";
 
     return {
       id: aluno.id,
       nome: aluno.nome,
       matricula: aluno.matricula,
       rfid: aluno.tag_rfid,
+      status_matricula: aluno.status_matricula,
+
       totalAulas,
       presencas,
       faltas,
@@ -405,8 +365,8 @@ async function carregarDadosAlunos() {
       pct,
       status,
     };
-  });
-}*/
+});
+}
 
 async function removerAluno(id) {
   if (!confirm('Remover este aluno?')) return;
@@ -622,7 +582,7 @@ function aplicarTemaProfessor() {
         document.body.classList.add('agronomia');
 
         document.querySelector('.logo-text span').textContent =
-            'Agronomia • Controle RFID';
+            'Agronomia';
 
         const logoIcon = document.querySelector('.logo-icon');
 
