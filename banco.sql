@@ -38,9 +38,9 @@ CREATE TABLE logs_acesso (
     CHECK (tipo IN (
         'ENTRADA',
         'SAIDA',
-        'ACESSO_NEGADO',
-        'TAG_NAO_CADASTRADA',
-        'MATRICULA_INATIVA'
+        'ACESSO NEGADO',
+        'TAG NAO CADASTRADA',
+        'MATRICULA INATIVA'
     )),
 
     CONSTRAINT chk_status_log

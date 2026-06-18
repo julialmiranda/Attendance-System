@@ -39,8 +39,15 @@ while True:
             timeout=5
         )
 
+        dados = resposta.json()
+
         print("Status HTTP:", resposta.status_code)
-        print("Resposta:", resposta.json())
+        print("Resposta:", dados)
+
+        if resposta.status_code == 200:
+            ser.write(b"OK\n")
+        else:
+            ser.write(b"NEGADO\n")
 
     except Exception as erro:
         print("Erro:", erro)

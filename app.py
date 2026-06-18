@@ -43,6 +43,40 @@ def calcular_presencas(entrada, saida):
 def home():
     return jsonify({"mensagem": "API RFID funcionando"})
 
+@app.route("/logs/tempo-real")
+def logs_tempo_real():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            id,
+            nome,
+            matricula,
+            tipo,
+            status,
+            timestamp
+        FROM logs_acesso
+        ORDER BY id DESC
+        LIMIT 10
+    """)
+
+    logs = cur.fetchall()
+
+    resultado = []
+
+    for log in logs:
+        resultado.append({
+            "id": log[0],
+            "nome": log[1],
+            "matricula": log[2],
+            "tipo": log[3],
+            "status": log[4],
+            "timestamp": log[5].strftime("%H:%M:%S")
+        })
+
+    return jsonify(resultado)
+
 @app.route("/rfid", methods=["POST"])
 def rfid():
     dados = request.get_json()
@@ -64,32 +98,32 @@ def rfid():
         aluno = cursor.fetchone()
 
         if not aluno:
-            registrar_log(cursor, "TAG_NAO_CADASTRADA", tag_rfid, "NEGADO",
+            registrar_log(cursor, "TAG NAO CADASTRADA", tag_rfid, "NEGADO",
                           "Cartão RFID não cadastrado no sistema")
             conn.commit()
             return jsonify({
-                "status": "TAG_NAO_CADASTRADA",
+                "status": "TAG NAO CADASTRADA",
                 "mensagem": "Cartão RFID não cadastrado no sistema"
             }), 403
 
         aluno_id, nome, matricula, tag, acesso, ativo, status_matricula = aluno
 
         if not ativo:
-            registrar_log(cursor, "ACESSO_NEGADO", tag_rfid, "NEGADO",
+            registrar_log(cursor, "ACESSO NEGADO", tag_rfid, "NEGADO",
                           "Aluno inativo no sistema", nome, matricula)
             conn.commit()
             return jsonify({
-                "status": "ACESSO_NEGADO",
+                "status": "ACESSO NEGADO",
                 "mensagem": "Aluno inativo no sistema",
                 "aluno": nome
             }), 403
 
         if not acesso:
-            registrar_log(cursor, "ACESSO_NEGADO", tag_rfid, "NEGADO",
+            registrar_log(cursor, "ACESSO NEGADO", tag_rfid, "NEGADO",
                           "Acesso bloqueado", nome, matricula)
             conn.commit()
             return jsonify({
-                "status": "ACESSO_NEGADO",
+                "status": "ACESSO NEGADO",
                 "mensagem": "Acesso bloqueado",
                 "aluno": nome
             }), 403
