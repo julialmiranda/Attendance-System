@@ -24,6 +24,11 @@ const api = {
     body: JSON.stringify(aluno)
   }),
 
+  editarAluno: (id, aluno) => request(`/alunos/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(aluno)
+  }),
+
   deletarAluno: (id) => request(`/alunos/${id}`, {
     method: 'DELETE'
   }),

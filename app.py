@@ -23,10 +23,10 @@ def registrar_log(cursor, tipo, tag_rfid, status, mensagem, nome=None, matricula
 
 def calcular_presencas(entrada, saida):
     periodos = [
-        (time(19, 0), time(20, 0)),
+        (time(19, 10), time(20, 0)),
         (time(20, 0), time(20, 50)),
         (time(21, 0), time(21, 50)),
-        (time(21, 50), time(22, 40)),
+        (time(21, 50), time(22, 40))
     ]
 
     presencas = [False, False, False, False]
@@ -200,8 +200,12 @@ def rfid():
             presenca_id
         ))
 
-        registrar_log(cursor, "SAIDA", tag_rfid, "REGISTRADO",
-                      "Saída registrada", nome, matricula)
+        faltas = 4 - total_presencas
+
+        registrar_log( cursor,"SAIDA",tag_rfid, "REGISTRADO",
+            f"Saída registrada - Presenças: {total_presencas}/4 | Faltas: {faltas}/4",
+            nome,matricula)
+        
         conn.commit()
 
         return jsonify({
@@ -294,17 +298,48 @@ def listar_alunos():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, nome, matricula, curso, tag_rfid, acesso, ativo, status_matricula
-        FROM alunos
-        ORDER BY id
-    """)
+        SELECT
+            a.id,
+            a.nome,
+            a.matricula,
+            a.curso,
+            a.tag_rfid,
+            a.acesso,
+            a.ativo,
+            a.status_matricula,
+            COALESCE(SUM(p.total_presencas), 0) AS presencas,
+            COUNT(p.id) * 4 AS total_aulas
+        FROM alunos a
+        LEFT JOIN presencas p
+            ON p.aluno_id = a.id
+            AND p.status = 'FECHADA'
+        GROUP BY
+            a.id,
+            a.nome,
+            a.matricula,
+            a.curso,
+            a.tag_rfid,
+            a.acesso,
+            a.ativo,
+            a.status_matricula
+        ORDER BY a.id
+""")
 
     dados = cursor.fetchall()
     cursor.close()
     conn.close()
 
-    return jsonify([
-        {
+    resultado = []
+
+    for row in dados:
+        total_aulas = int(row[9])
+        presencas = int(row[8])
+
+        faltas = max(0, total_aulas - presencas)
+
+        percentual = round((presencas / total_aulas) * 100) if total_aulas > 0 else 0
+
+        resultado.append({
             "id": row[0],
             "nome": row[1],
             "matricula": row[2],
@@ -312,10 +347,14 @@ def listar_alunos():
             "tag_rfid": row[4],
             "acesso": row[5],
             "ativo": row[6],
-            "status_matricula": row[7]
-        }
-        for row in dados
-    ])
+            "status_matricula": row[7],
+            "total_aulas": total_aulas,
+            "presencas": presencas,
+            "faltas": faltas,
+            "percentual_frequencia": percentual
+        })
+
+    return jsonify(resultado)
 
 @app.route("/alunos", methods=["POST"])
 def criar_aluno():
@@ -634,6 +673,44 @@ def faltosos():
         }
         for row in dados
     ])
+
+@app.route("/alunos/<int:id>", methods=["PATCH"])
+def editar_aluno(id):
+    try:
+        dados = request.json
+
+        conn = connect_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE alunos
+            SET
+                nome = %s,
+                matricula = %s,
+                tag_rfid = %s
+            WHERE id = %s
+        """, (
+            dados["nome"],
+            dados["matricula"],
+            dados["tag_rfid"],
+            id
+        ))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "status": "SUCESSO",
+            "mensagem": "Aluno atualizado com sucesso"
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "ERRO",
+            "mensagem": str(e)
+        }), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
