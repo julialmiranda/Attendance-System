@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Atitus Educação</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/login.css" />
+</head>
+
+<body>
+
+<div class="left-panel">
+  <div class="left-logo">
+    <div class="left-logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <div class="left-logo-text">
+      <strong>Atitus Educação</strong>
+      <span>Sistema de Presenças RFID</span>
+    </div>
+  </div>
+
+  <div class="left-hero">
+    <h1>Controle de<br>presenças <em>inteligente</em></h1>
+    <p>Plataforma integrada de gerenciamento de frequência via leitura de cartões RFID para professores da instituição.</p>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="login-box">
+    <h2>Bem-vindo!</h2>
+    <p>Insira suas credenciais para continuar.</p>
+
+    <div class="field">
+      <label>Usuário</label>
+      <div class="input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <input type="text" id="input-email" placeholder="Usuário" autocomplete="username" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Senha</label>
+      <div class="input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="password" id="input-senha" placeholder="Senha" autocomplete="current-password" />
+        <button class="eye-btn" type="button" onclick="toggleSenha()" title="Mostrar/ocultar senha">
+          <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="error-msg" id="error-msg">E-mail ou senha incorretos. Verifique suas credenciais.</div>
+      <div class="forgot-password">
+          <a href="#" onclick="alert('Funcionalidade em desenvolvimento');return false;"> Esqueceu sua senha? </a>
+</div>
+    </div>
+
+    <button class="btn-login" id="btn-login" onclick="fazerLogin()">
+      <span id="btn-text">Entrar na plataforma</span>
+      <div class="spinner" id="spinner"></div>
+      <svg id="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <div class="footer-note">Atitus Educação © 2026 · Todos os direitos reservados</div>
+  </div>
+</div>
+<script src="/login.js"></script>
+</body>
+</html>

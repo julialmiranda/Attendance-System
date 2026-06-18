@@ -11,7 +11,7 @@ def connect_db():
         host="localhost",
         database="rfid_monitoramento",
         user="postgres",
-        password="123456"
+        password="123456" 
     )
 
 def registrar_log(cursor, tipo, tag_rfid, status, mensagem, nome=None, matricula=None):
@@ -129,7 +129,7 @@ def rfid():
             }), 403
 
         if status_matricula != "ATIVA":
-            registrar_log(cursor, "MATRICULA_INATIVA", tag_rfid, "NEGADO",
+            registrar_log(cursor, "MATRICULA INATIVA", tag_rfid, "NEGADO",
                           f"Matrícula com status {status_matricula}", nome, matricula)
             conn.commit()
             return jsonify({
