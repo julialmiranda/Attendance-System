@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presenças RFID — Atitus Educação</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="/index.css" />
+  
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#003F8C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <strong>Atitus Educação</strong>
+        <span id="sidebar-curso">—</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-label">Principal</div>
+    <button class="nav-item active" onclick="navigateTo('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" onclick="navigateTo('alunos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Alunos
+    </button>
+    <button class="nav-item" onclick="navigateTo('rfid')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      Chamada RFID
+    </button>
+    <div class="nav-label" style="margin-top:10px">Professor</div>
+    <button class="nav-item" onclick="navigateTo('atestados')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Atestados
+    </button>
+    <button class="nav-item" onclick="navigateTo('relatorios')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Relatórios
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="professor-card">
+      <div class="p-name" id="prof-nome">—</div>
+      <div class="p-course" id="prof-email">—</div>
+      <span class="p-curso-badge" id="prof-badge">—</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sair da conta
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-title">Dashboard</h1>
+      <span id="page-sub">—</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline" onclick="abrirModalNovaAula()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nova Aula
+      </button>
+      <button class="btn btn-primary" onclick="gerarPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar PDF
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <section class="view active" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon azul"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total de Alunos</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><div class="stat-value" id="stat-regulares" style="color:var(--verde)">—</div><div class="stat-label">Situação Regular</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amarelo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div><div class="stat-value" id="stat-estaveis" style="color:var(--amarelo)">—</div><div class="stat-label">Situação Estável</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon vermelho"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div><div class="stat-value" id="stat-criticos" style="color:var(--vermelho)">—</div><div class="stat-label">Situação Crítica</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Últimas Presenças Registradas</div><div class="card-sub">Histórico via RFID</div></div>
+          <span id="aula-atual-badge" style="font-size:12px;font-weight:600;color:var(--azul);background:var(--azul-claro);padding:4px 12px;border-radius:99px;">Nenhuma aula ativa</span>
+        </div>
+        <ul class="log-list" id="log-list" style="padding:8px 16px;">
+        </ul>
+      </div>
+      <div id="rfid-log" style="padding:16px;"></div>
+    </section>
+
+    <section class="view" id="view-alunos">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" placeholder="Buscar aluno..." id="search-aluno" oninput="filtrarAlunos()" />
+        </div>
+        <select class="filter-select" id="filtro-status" onchange="filtrarAlunos()">
+          <option value="">Todos os status</option>
+          <option value="regular">Regular</option>
+          <option value="estavel">Estável</option>
+          <option value="critico">Crítico</option>
+        </select>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="abrirModalAluno()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Novo Aluno
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Lista de Alunos</div><div class="card-sub" id="count-alunos">—</div></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Aluno</th><th>RFID Tag</th><th>Presenças</th>
+              <th style="min-width:160px">Frequência</th><th>Faltas</th>
+              <th>Atestados</th><th>Situação</th><th></th>
+            </tr></thead>
+            <tbody id="tabela-alunos"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-rfid">
+      <div class="rfid-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <h2 style="font-size:15px;font-weight:700">Chamada via RFID</h2>
+            <p style="font-size:13px;color:var(--sub);margin-top:2px">Aproxime o cartão do aluno ao leitor</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" id="btn-iniciar-aula" onclick="abrirModalNovaAula()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Iniciar Chamada
+            </button>
+            <button class="btn btn-danger" id="btn-encerrar-aula" onclick="encerrarAula()" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Encerrar
+            </button>
+          </div>
+        </div>
+        <div class="rfid-reader-box" id="rfid-box">
+          <div class="rfid-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="12" cy="15" r="1.5"/><path d="M9.5 15h-3M17.5 15h-3"/></svg></div>
+          <div class="rfid-text">
+            <h3 id="rfid-title">Leitor em espera</h3>
+            <p id="rfid-desc">Inicie uma chamada para ativar o leitor RFID</p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Registros desta aula</div><div class="card-sub" id="rfid-aula-info">—</div></div>
+          <span id="rfid-count" style="font-size:13px;font-weight:700;color:var(--azul)">0 presentes</span>
+        </div>
+        <ul class="log-list" id="rfid-log" style="padding:8px 16px">
+          <div class="empty-state" style="padding:32px" id="rfid-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <h3>Aguardando leituras</h3><p>Os registros aparecerão aqui em tempo real.</p>
+          </div>
+        </ul>
+      </div>
+    </section>
+
+    <section class="view" id="view-atestados">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" placeholder="Buscar aluno..." id="search-atestado" oninput="filtrarAtestados()" />
+        </div>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="abrirModalAtestado()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Novo Atestado
+        </button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Atestados Médicos</div><div class="card-sub">Gerenciamento de justificativas de falta</div></div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Aluno</th><th>Período</th><th>Dias Cobertos</th><th>Descrição</th><th>Faltas Justificadas</th><th></th></tr></thead>
+            <tbody id="tabela-atestados"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-relatorios">
+      <div class="relatorio-grid">
+        <div class="rel-card">
+          <h3>📋 Lista de Presença Completa</h3>
+          <p>PDF com todos os alunos, presenças, faltas e situação da turma.</p>
+          <button class="btn btn-primary" style="width:100%" onclick="gerarPDF()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Gerar e Baixar PDF
+          </button>
+        </div>
+        <div class="rel-card">
+          <h3>⚠️ Alunos em Situação Crítica</h3>
+          <p>Relatório focado em alunos com risco de reprovação por falta.</p>
+          <button class="btn btn-danger" style="width:100%;border:none" onclick="gerarPDF(true)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Gerar PDF Críticos
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Resumo da Turma</div></div>
+        <div style="padding:24px"><div id="resumo-turma" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+</div>
+
+<div class="overlay" id="modal-aluno">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title" id="modal-aluno-title">Novo Aluno</div><div class="modal-sub">Preencha os dados do aluno</div></div>
+      <button class="modal-close" onclick="fecharModal('modal-aluno')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Matrícula</label><input type="text" id="aluno-mat" placeholder="2023001" /></div>
+        <div class="field"><label>RFID Tag</label><input type="text" id="aluno-rfid" placeholder="A1B2C3D4" /></div>
+      </div>
+      <div class="field"><label>Nome Completo</label><input type="text" id="aluno-nome" placeholder="Nome do aluno" /></div>
+      <div class="field-row">
+        <div class="field"><label>Total de Aulas</label><input type="number" id="aluno-total" value="40" min="1" /></div>
+        <div class="field"><label>Presenças</label><input type="number" id="aluno-presencas" value="0" min="0" /></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-aluno')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAluno()">Salvar Aluno</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-detalhe">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div><div class="modal-title">Detalhes do Aluno</div><div class="modal-sub">Histórico completo de frequência</div></div>
+      <button class="modal-close" onclick="fecharModal('modal-detalhe')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="modal-detalhe-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-detalhe')">Fechar</button>
+      <button class="btn btn-outline" onclick="abrirAtestadoParaAluno()">Adicionar Atestado</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-atestado">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Registrar Atestado Médico</div><div class="modal-sub">As faltas do período serão justificadas</div></div>
+      <button class="modal-close" onclick="fecharModal('modal-atestado')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Aluno</label><select id="atestado-aluno"><option value="">Selecione...</option></select></div>
+      <div class="field-row">
+        <div class="field"><label>Data Início</label><input type="date" id="atestado-inicio" /></div>
+        <div class="field"><label>Data Fim</label><input type="date" id="atestado-fim" /></div>
+      </div>
+      <div class="field"><label>Descrição / CID</label><textarea id="atestado-desc" placeholder="Ex: Consulta médica, CID X00..."></textarea></div>
+      <div class="field"><label>Faltas Justificadas</label><input type="number" id="atestado-faltas" value="1" min="0" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-atestado')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarAtestado()">Registrar Atestado</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-nova-aula">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Nova Aula</div><div class="modal-sub">Configure a aula para iniciar a chamada</div></div>
+      <button class="modal-close" onclick="fecharModal('modal-nova-aula')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Data</label><input type="date" id="nova-aula-data" /></div>
+        <div class="field"><label>Horário</label><input type="time" id="nova-aula-hora" /></div>
+      </div>
+      <div class="field"><label>Descrição</label><input type="text" id="nova-aula-desc" placeholder="Ex: Aula 12 — Estruturas de Dados" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal('modal-nova-aula')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarNovaAula()">Criar Aula</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+<script src="api.js"></script>
+<script src="/index.js"></script>
+</body>
+</html>

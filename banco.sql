@@ -91,8 +91,8 @@ INSERT INTO alunos
 VALUES
 ('Julia', '001', 'Sistemas de Informação', '553307625663', TRUE, TRUE, 'ATIVA'),
 ('Visitante', '002', 'Visitante', '771439528262', FALSE, TRUE, 'ATIVA'),
-('Aluno Trancado', '003', 'Sistemas de Informação', '999999999999', TRUE, TRUE, 'TRANCADA'),
-('Aluno Formado', '004', 'Sistemas de Informação', '888888888888', TRUE, TRUE, 'FORMADO');
+('Maria Souza', '003', 'Sistemas de Informação', '999999999999', TRUE, TRUE, 'TRANCADA'),
+('Carlos Oliveira', '004', 'Ciência da Computação', '888888888888', TRUE, TRUE, 'FORMADO');
 
 UPDATE alunos SET status_matricula = 'TRANCADA' WHERE tag_rfid = '999999999999';
 
