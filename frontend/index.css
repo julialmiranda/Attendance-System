@@ -210,4 +210,16 @@
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--borda); border-radius:99px; }
 
+    .saida-resumo {display: flex;gap: 8px;margin-top: 6px;flex-wrap: wrap;}
+    .pill-presenca,.pill-falta {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 999px;
+        }
+
+    .pill-presenca {background: #dcfce7; color: #15803d;}
+
+    .pill-falta { background: #fee2e2; color: #b91c1c;}
+
     @media(max-width:1024px){ .stats-grid{grid-template-columns:1fr 1fr;} .relatorio-grid{grid-template-columns:1fr;} }

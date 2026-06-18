@@ -72,6 +72,13 @@ async function carregarLogsRFID() {
             <strong>${nome}</strong>
             <div style="color:#64748B;font-size:12px;">
               Matrícula: ${matricula} · TAG: ${log.tag_rfid}
+              ${log.tipo === "SAIDA" && log.mensagem ? `
+                <div class="saida-resumo">
+                <span class="pill-presenca">Presenças: ${extrairPresencas(log.mensagem)}</span>
+                <span class="pill-falta">Faltas: ${extrairFaltas(log.mensagem)}</span>
+              </div>
+              `: ""
+            }
             </div>
           </div>
 
@@ -84,6 +91,11 @@ async function carregarLogsRFID() {
         </div>
       `;
     }).join("");
+
+    await carregarDadosAlunos();
+
+    renderTabela();
+    atualizarStats();
 
   } catch (erro) {
     console.error("Erro ao carregar logs RFID:", erro);
@@ -249,9 +261,21 @@ async function salvarAluno() {
 
   try {
     if (editandoId) {
-      toast('Edição completa ainda não existe no backend.', 'info');
-      return;
-    }
+      await api.editarAluno(editandoId, {
+      nome,
+      matricula: mat,
+      tag_rfid: rfid
+    });
+    await carregarDadosAlunos();
+
+    renderTabela();
+    atualizarStats();
+
+    toast('Aluno atualizado.', 'success');
+
+    fecharModal('modal-aluno');
+    return;
+  }
 
     await api.criarAluno({
       nome,
@@ -282,15 +306,22 @@ function mapearAlunoBackend(c) {
     matricula: c.matricula,
     rfid: c.tag_rfid,
 
-    totalAulas: 4,
-    presencas: c.status_matricula === "ATIVA" ? 4 : 0,
-    faltas: c.status_matricula === "ATIVA" ? 0 : 4,
+    totalAulas: c.total_aulas,
+    presencas: c.presencas,
+    faltas: c.faltas,
 
     atestados: 0,
-    faltasEfetivas: 0,
-    pct: c.status_matricula === "ATIVA" ? 100 : 0,
+    faltasEfetivas: c.faltas,
 
-    status: c.status_matricula === "ATIVA" ? "regular" : "critico",
+    pct: c.percentual_frequencia,
+
+    status:
+      c.percentual_frequencia >= 75
+        ? "regular"
+        : c.percentual_frequencia >= 60
+          ? "estavel"
+          : "critico",
+
     atestadosList: []
   };
 }
@@ -304,16 +335,10 @@ async function carregarDadosAlunos() {
       p => p.matricula === aluno.matricula
     );
 
-    const totalAulas = 4;
-
-  const presencas =
-    aluno.status_matricula === "ATIVA" ? 4 : 0;
-
-  const faltas =
-    aluno.status_matricula === "ATIVA" ? 0 : 4;
-
-  const pct =
-    aluno.status_matricula === "ATIVA" ? 100 : 0;
+  const totalAulas = aluno.total_aulas;
+  const presencas = aluno.presencas;
+  const faltas = aluno.faltas;
+  const pct = aluno.percentual_frequencia;
 
   const status =
     pct >= 75
@@ -665,6 +690,16 @@ function toast(msg,type='info'){
   el.innerHTML=`${icons[type]}<span>${msg}</span>`;
   document.getElementById('toast-wrap').appendChild(el);
   setTimeout(()=>el.remove(),3500);
+}
+
+function extrairPresencas(msg) {
+  const match = msg.match(/Presenças:\s*([^|]+)/);
+  return match ? match[1].trim() : "-";
+}
+
+function extrairFaltas(msg) {
+  const match = msg.match(/Faltas:\s*(.+)/);
+  return match ? match[1].trim() : "-";
 }
 
 init();
