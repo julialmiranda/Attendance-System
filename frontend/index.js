@@ -24,11 +24,28 @@ const PROFESSORES = {
 
 const CORES = ['avatar-azul', 'avatar-verde', 'avatar-laranja', 'avatar-roxo'];
 
+const statusMatriculaLabel = {
+  ATIVA: "Matrícula Ativa",
+  TRANCADA: "Matrícula Trancada",
+  FORMADO: "Formado",
+  CANCELADA: "Matrícula Cancelada",
+  TRANSFERIDO: "Transferido",
+  EVADIDO: "Evadido"
+};
+
+const statusMatriculaClasse = {
+  ATIVA: "ativa",
+  TRANCADA: "trancada",
+  FORMADO: "formado",
+  CANCELADA: "cancelada",
+  TRANSFERIDO: "transferido",
+  EVADIDO: "evadido"
+};
+
 let profAtual   = null;
 let alunos      = [];
 let aulaAtiva   = null;
 let rfidInterval= null;
-let atestadosTodos = [];
 let alunoDetalheId = null;
 let editandoId  = null;
 
@@ -137,7 +154,6 @@ async function init() {
     console.log('ALUNOS:', alunos);
 
     atualizarStats();
-    popularSelectAtestado();
     navigateTo('dashboard');
     carregarLogsRFID();
     setInterval(carregarLogsRFID, 1000);
@@ -157,7 +173,6 @@ const PAGES = {
   dashboard:  { title:'Dashboard',     sub:() => `Visão geral · ${profAtual.materia} · ${profAtual.semestre}` },
   alunos:     { title:'Alunos',        sub:() => `${alunos.length} alunos · ${profAtual.curso}` },
   rfid:       { title:'Chamada RFID',  sub:() => 'Registro de presença por aproximação de cartão' },
-  atestados:  { title:'Atestados',     sub:() => 'Gerenciamento de justificativas médicas' },
   relatorios: { title:'Relatórios',    sub:() => `Exportação e análise · ${profAtual.curso}` },
 };
 
@@ -171,7 +186,6 @@ function navigateTo(page) {
   document.getElementById('page-title').textContent = PAGES[page].title;
   document.getElementById('page-sub').textContent   = PAGES[page].sub();
   if(page==='alunos')     renderTabela();
-  if(page==='atestados')  renderAtestados();
   if(page==='relatorios') renderResumo();
 }
 
@@ -201,7 +215,6 @@ function renderTabela(lista=alunos) {
         <div class="progress-bar"><div class="progress-fill" style="width:${a.pct}%;background:${fill}"></div></div>
       </td>
       <td style="font-weight:700;color:var(--vermelho)">${a.faltas}</td>
-      <td style="color:var(--azul);font-weight:600">${a.atestados}</td>
       <td><span class="badge ${a.status}"><span class="badge-dot"></span>${lbl}</span></td>
       <td><div class="actions">
         <button class="icon-btn" title="Detalhes" onclick="verDetalhe(${a.id})">
@@ -292,7 +305,6 @@ async function salvarAluno() {
     alunos = dados.map(mapearAlunoBackend);
 
     renderTabela();
-    popularSelectAtestado();
 
   } catch (erro) {
     toast(erro.message, 'error');
@@ -305,12 +317,12 @@ function mapearAlunoBackend(c) {
     nome: c.nome,
     matricula: c.matricula,
     rfid: c.tag_rfid,
+    status_matricula: c.status_matricula,
 
     totalAulas: c.total_aulas,
     presencas: c.presencas,
     faltas: c.faltas,
 
-    atestados: 0,
     faltasEfetivas: c.faltas,
 
     pct: c.percentual_frequencia,
@@ -321,8 +333,6 @@ function mapearAlunoBackend(c) {
         : c.percentual_frequencia >= 60
           ? "estavel"
           : "critico",
-
-    atestadosList: []
   };
 }
 
@@ -352,18 +362,16 @@ async function carregarDadosAlunos() {
     nome: aluno.nome,
     matricula: aluno.matricula,
     rfid: aluno.tag_rfid,
+    status_matricula: aluno.status_matricula,
 
     totalAulas,
     presencas,
     faltas,
 
-    atestados: 0,
     faltasEfetivas: faltas,
 
     pct,
     status,
-
-    atestadosList: []
   };
 });
 };
@@ -393,11 +401,9 @@ async function carregarDadosAlunos() {
       totalAulas,
       presencas,
       faltas,
-      atestados: 0,
       faltasEfetivas: faltas,
       pct,
       status,
-      atestadosList: []
     };
   });
 }*/
@@ -411,7 +417,6 @@ async function removerAluno(id) {
     alunos = alunos.filter(a => a.id !== id);
 
     renderTabela();
-    popularSelectAtestado();
 
     toast('Aluno removido.', 'info');
 
@@ -425,14 +430,18 @@ function verDetalhe(id) {
   const a=alunos.find(x=>x.id===id);
   const ini=a.nome.split(' ').slice(0,2).map(p=>p[0]).join('');
   const lbl={regular:'Regular',estavel:'Estável',critico:'Crítico'}[a.status];
-  const ats=atestadosTodos.filter(t=>t.alunoId===id);
+  const statusMatricula =statusMatriculaLabel[a.status_matricula] || a.status_matricula;
+  const classeMatricula = statusMatriculaClasse[a.status_matricula] || a.status_matricula;
   document.getElementById('modal-detalhe-body').innerHTML=`
     <div class="detail-header">
       <div class="detail-avatar">${ini}</div>
       <div class="detail-info">
         <h2>${a.nome}</h2>
         <p>${a.matricula} · RFID: ${a.rfid} · ${profAtual.curso}</p>
-        <span class="badge ${a.status}" style="margin-top:8px;display:inline-flex">${lbl}</span>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+          <span class="badge ${a.status}" style="display:inline-flex">${lbl}</span>
+          <span class="badge-matricula ${classeMatricula}">${statusMatricula}</span>
+        </div>
       </div>
     </div>
     <div class="detail-stats">
@@ -450,96 +459,10 @@ function verDetalhe(id) {
       </div>
       <div style="font-size:11px;color:var(--sub);margin-top:4px">Mínimo para aprovação: 75% (${Math.ceil(a.totalAulas*.75)} aulas)</div>
     </div>
-    <div style="font-size:14px;font-weight:700;margin-bottom:10px">Atestados (${ats.length})</div>
-    <ul class="atestado-list">${ats.length?ats.map(t=>`
-      <li class="atestado-item">
-        <div class="atestado-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
-        <div><div class="atestado-desc">${t.descricao||'Atestado médico'}</div><div class="atestado-dates">${t.inicio} → ${t.fim} · ${t.faltas} falta(s)</div></div>
-      </li>`).join(''):`<div class="empty-state" style="padding:20px"><p>Nenhum atestado registrado.</p></div>`}
     </ul>`;
   abrirModal('modal-detalhe');
 }
 
-function abrirAtestadoParaAluno() {
-  fecharModal('modal-detalhe');
-  popularSelectAtestado();
-  document.getElementById('atestado-aluno').value=alunoDetalheId;
-  abrirModal('modal-atestado');
-}
-
-function popularSelectAtestado() {
-  const sel=document.getElementById('atestado-aluno');
-  sel.innerHTML='<option value="">Selecione o aluno...</option>'+
-    alunos.map(a=>`<option value="${a.id}">${a.nome} (${a.matricula})</option>`).join('');
-}
-
-function abrirModalAtestado() {
-  popularSelectAtestado();
-  const hoje=new Date().toISOString().split('T')[0];
-  document.getElementById('atestado-inicio').value=hoje;
-  document.getElementById('atestado-fim').value=hoje;
-  document.getElementById('atestado-desc').value='';
-  document.getElementById('atestado-faltas').value='1';
-  abrirModal('modal-atestado');
-}
-
-function salvarAtestado() {
-  const alunoId=parseInt(document.getElementById('atestado-aluno').value);
-  const inicio=document.getElementById('atestado-inicio').value;
-  const fim=document.getElementById('atestado-fim').value;
-  const desc=document.getElementById('atestado-desc').value.trim();
-  const faltas=parseInt(document.getElementById('atestado-faltas').value)||1;
-  if(!alunoId||!inicio||!fim){toast('Preencha todos os campos.','error');return;}
-  const at={id:Date.now(),alunoId,inicio,fim,descricao:desc,faltas};
-  atestadosTodos.push(at);
-  const a=alunos.find(x=>x.id===alunoId);
-  a.atestados+=faltas;
-  a.faltasEfetivas=Math.max(0,a.faltas-a.atestados);
-  a.atestadosList.push(at);
-  fecharModal('modal-atestado');
-  toast(`Atestado de ${a.nome} registrado!`,'success');
-  renderAtestados();
-  renderTabela();
-}
-
-function renderAtestados() {
-  const filtro=document.getElementById('search-atestado')?.value.toLowerCase()||'';
-  const lista=atestadosTodos.filter(t=>{
-    const a=alunos.find(x=>x.id===t.alunoId);
-    return !filtro||a?.nome.toLowerCase().includes(filtro);
-  });
-  const tbody=document.getElementById('tabela-atestados');
-  tbody.innerHTML=lista.length?lista.map(t=>{
-    const a=alunos.find(x=>x.id===t.alunoId);
-    const dias=Math.round((new Date(t.fim)-new Date(t.inicio))/(864e5))+1;
-    return `<tr>
-      <td><div class="aluno-info">
-        <div class="avatar ${CORES[a.id%CORES.length]}">${a.nome.split(' ').slice(0,2).map(p=>p[0]).join('')}</div>
-        <div><div class="aluno-nome">${a.nome}</div><div class="aluno-mat">${a.matricula}</div></div>
-      </div></td>
-      <td style="font-size:12px">${t.inicio} → ${t.fim}</td>
-      <td><span class="badge estavel">${dias} dia(s)</span></td>
-      <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">${t.descricao||'—'}</td>
-      <td style="font-weight:700;color:var(--azul)">${t.faltas}</td>
-      <td><button class="icon-btn danger" onclick="removerAtestado(${t.id})">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-      </button></td>
-    </tr>`;
-  }).join(''):`<tr><td colspan="6"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h3>Nenhum atestado</h3><p>Registre o primeiro atestado.</p></div></td></tr>`;
-}
-
-function filtrarAtestados() { renderAtestados(); }
-
-function removerAtestado(id) {
-  const t=atestadosTodos.find(x=>x.id===id);
-  if(!t) return;
-  const a=alunos.find(x=>x.id===t.alunoId);
-  a.atestados=Math.max(0,a.atestados-t.faltas);
-  a.faltasEfetivas=Math.max(0,a.faltas-a.atestados);
-  atestadosTodos=atestadosTodos.filter(x=>x.id!==id);
-  renderAtestados();
-  toast('Atestado removido.','info');
-}
 
 function abrirModalNovaAula() {
   const hoje=new Date().toISOString().split('T')[0];
@@ -617,7 +540,6 @@ function renderResumo() {
     {val:`${media}%`,lbl:'Média de frequência',cor:media>=75?'var(--verde)':'var(--vermelho)'},
     {val:alunos.filter(a=>a.status==='critico').length,lbl:'Alunos em situação crítica',cor:'var(--vermelho)'},
     {val:alunos[0]?.totalAulas||40,lbl:'Aulas realizadas',cor:'var(--sub)'},
-    {val:atestadosTodos.length,lbl:'Atestados registrados',cor:'var(--azul)'},
     {val:alunos.filter(a=>a.status==='regular').length,lbl:'Alunos regulares',cor:'var(--verde)'},
   ];
   document.getElementById('resumo-turma').innerHTML=items.map(i=>`
@@ -646,8 +568,8 @@ function gerarPDF(apenasCriticos=false) {
   doc.text(`Professor(a): ${profAtual.nome}  |  Total: ${alunos.length}  |  Regular: ${reg}  |  Estável: ${est}  |  Crítico: ${crit}  |  Mín.: 75%`,14,37);
   doc.autoTable({
     startY:42,
-    head:[['#','Matrícula','Nome','RFID','Presenças','Faltas','Atestados','F. Efetivas','Frequência','Situação']],
-    body:lista.map((a,i)=>[i+1,a.matricula,a.nome,a.rfid,a.presencas,a.faltas,a.atestados,a.faltasEfetivas,`${a.pct}%`,{regular:'Regular',estavel:'Estável',critico:'Crítico'}[a.status]]),
+    head:[['#','Matrícula','Nome','RFID','Presenças','Faltas','F. Efetivas','Frequência','Situação']],
+    body:lista.map((a,i)=>[i+1,a.matricula,a.nome,a.rfid,a.presencas,a.faltas,a.faltasEfetivas,`${a.pct}%`,{regular:'Regular',estavel:'Estável',critico:'Crítico'}[a.status]]),
     styles:{fontSize:7.5,cellPadding:3,valign:'middle'},
     headStyles:{fillColor:[0,63,140],textColor:255,fontStyle:'bold',fontSize:8},
     alternateRowStyles:{fillColor:[248,250,255]},
@@ -699,11 +621,9 @@ function aplicarTemaProfessor() {
 
         document.body.classList.add('agronomia');
 
-        // Texto do logo
         document.querySelector('.logo-text span').textContent =
             'Agronomia • Controle RFID';
 
-        // Ícone do logo
         const logoIcon = document.querySelector('.logo-icon');
 
         if (logoIcon) {
