@@ -692,6 +692,32 @@ function toast(msg,type='info'){
   setTimeout(()=>el.remove(),3500);
 }
 
+function aplicarTemaProfessor() {
+    const professor = sessionStorage.getItem('atitus_professor');
+
+    if (professor === 'fernando') {
+
+        document.body.classList.add('agronomia');
+
+        // Texto do logo
+        document.querySelector('.logo-text span').textContent =
+            'Agronomia • Controle RFID';
+
+        // Ícone do logo
+        const logoIcon = document.querySelector('.logo-icon');
+
+        if (logoIcon) {
+            logoIcon.style.background = '#E8F5E9';
+            logoIcon.style.color = '#4A6741';
+            logoIcon.style.border = '1px solid #A5D6A7';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    aplicarTemaProfessor();
+});
+
 function extrairPresencas(msg) {
   const match = msg.match(/Presenças:\s*([^|]+)/);
   return match ? match[1].trim() : "-";
