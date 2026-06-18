@@ -18,12 +18,7 @@
   <div class="sidebar-logo">
     <div class="logo-badge">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
       </div>
@@ -45,10 +40,6 @@
       Alunos
     </button>
     <div class="nav-label" style="margin-top:10px">Professor</div>
-    <button class="nav-item" onclick="navigateTo('atestados')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Atestados
-    </button>
     <button class="nav-item" onclick="navigateTo('relatorios')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Relatórios
@@ -105,7 +96,7 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <div><div class="card-title">Últimas Presenças Registradas</div><div class="card-sub">Histórico via RFID</div></div>
+          <div><div class="card-title">Últimas Presenças Registradas</div><div class="card-sub">Histórico</div></div>
           <span id="aula-atual-badge" style="font-size:12px;font-weight:600;color:var(--azul);background:var(--azul-claro);padding:4px 12px;border-radius:99px;">Nenhuma aula ativa</span>
         </div>
         <ul class="log-list" id="log-list" style="padding:8px 16px;">
@@ -141,34 +132,8 @@
             <thead><tr>
               <th>Aluno</th><th>RFID Tag</th><th>Presenças</th>
               <th style="min-width:160px">Frequência</th><th>Faltas</th>
-              <th>Atestados</th><th>Situação</th><th></th>
             </tr></thead>
             <tbody id="tabela-alunos"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="view" id="view-atestados">
-      <div class="toolbar">
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" class="search-input" placeholder="Buscar aluno..." id="search-atestado" oninput="filtrarAtestados()" />
-        </div>
-        <div style="flex:1"></div>
-        <button class="btn btn-primary" onclick="abrirModalAtestado()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Novo Atestado
-        </button>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div><div class="card-title">Atestados Médicos</div><div class="card-sub">Gerenciamento de justificativas de falta</div></div>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th>Aluno</th><th>Período</th><th>Dias Cobertos</th><th>Descrição</th><th>Faltas Justificadas</th><th></th></tr></thead>
-            <tbody id="tabela-atestados"></tbody>
           </table>
         </div>
       </div>
@@ -236,29 +201,6 @@
     <div class="modal-body" id="modal-detalhe-body"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="fecharModal('modal-detalhe')">Fechar</button>
-      <button class="btn btn-outline" onclick="abrirAtestadoParaAluno()">Adicionar Atestado</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="modal-atestado">
-  <div class="modal">
-    <div class="modal-header">
-      <div><div class="modal-title">Registrar Atestado Médico</div><div class="modal-sub">As faltas do período serão justificadas</div></div>
-      <button class="modal-close" onclick="fecharModal('modal-atestado')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>Aluno</label><select id="atestado-aluno"><option value="">Selecione...</option></select></div>
-      <div class="field-row">
-        <div class="field"><label>Data Início</label><input type="date" id="atestado-inicio" /></div>
-        <div class="field"><label>Data Fim</label><input type="date" id="atestado-fim" /></div>
-      </div>
-      <div class="field"><label>Descrição / CID</label><textarea id="atestado-desc" placeholder="Ex: Consulta médica, CID X00..."></textarea></div>
-      <div class="field"><label>Faltas Justificadas</label><input type="number" id="atestado-faltas" value="1" min="0" /></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="fecharModal('modal-atestado')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarAtestado()">Registrar Atestado</button>
     </div>
   </div>
 </div>

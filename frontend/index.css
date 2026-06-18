@@ -23,18 +23,10 @@
 }
 
     
- body.agronomia {
-      --azul: #4A6741;
-    --azul-med: #6E8B5B;
-    --azul-claro: #F6F8F3;
-    --azul-borda: #B8C9A4;
-    }
+    body.agronomia {--azul: #4A6741;--azul-med: #6E8B5B;--azul-claro: #F6F8F3;--azul-borda: #B8C9A4;}
 
-            body.agronomia .logo-text span {
-                    color: #fafafa;
-                }
+    body.agronomia .logo-text span {color: #fafafa;}
 
-    
     body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--texto); min-height:100vh; font-size:14px; line-height:1.6; }
     .layout { display:flex; min-height:100vh; }
 
@@ -233,7 +225,23 @@
         }
 
     .pill-presenca {background: #dcfce7; color: #15803d;}
-
     .pill-falta { background: #fee2e2; color: #b91c1c;}
+
+    .badge-matricula{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding:4px 10px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:700;
+    }
+
+    .badge-matricula.ativa{background:#DCFCE7;color:#15803D;}
+    .badge-matricula.trancada{background:#FEF3C7;color:#B45309;}
+    .badge-matricula.formado{background:#DBEAFE;color:#1D4ED8;}
+    .badge-matricula.cancelada{background:#FEE2E2;color:#B91C1C;}
+    .badge-matricula.transferido{background:#EDE9FE;color:#6D28D9;}
+    .badge-matricula.evadido{background:#E5E7EB;color:#374151;}
 
     @media(max-width:1024px){ .stats-grid{grid-template-columns:1fr 1fr;} .relatorio-grid{grid-template-columns:1fr;} }
