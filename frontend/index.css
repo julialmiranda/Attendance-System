@@ -21,6 +21,20 @@
       --radius-sm:   8px;
       --shadow:      0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
 }
+
+    
+ body.agronomia {
+      --azul: #4A6741;
+    --azul-med: #6E8B5B;
+    --azul-claro: #F6F8F3;
+    --azul-borda: #B8C9A4;
+    }
+
+            body.agronomia .logo-text span {
+                    color: #fafafa;
+                }
+
+    
     body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--texto); min-height:100vh; font-size:14px; line-height:1.6; }
     .layout { display:flex; min-height:100vh; }
 
@@ -31,7 +45,7 @@
     .logo-icon { width:34px; height:34px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
     .logo-icon svg { width:20px; height:20px; }
     .logo-text strong { display:block; color:#fff; font-size:13px; font-weight:700; }
-    .logo-text span { color:rgba(255,255,255,.55); font-size:10.5px; }
+    .logo-text span { color:rgba(255, 255, 255, 0.55); font-size:10.5px; }
     .sidebar-nav { padding:14px 12px; flex:1; overflow-y:auto; }
     .nav-label { color:rgba(255,255,255,.38); font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:8px 12px 6px; margin-top:6px; }
     .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius-sm); color:rgba(255,255,255,.7); cursor:pointer; transition:all .15s; font-size:13px; font-weight:500; margin-bottom:2px; border:none; background:none; width:100%; text-align:left; }
