@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:5000'; 
+const API_BASE_URL = 'http://10.1.25.114:5000'; 
 
 async function request(endpoint, options = {}) {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {

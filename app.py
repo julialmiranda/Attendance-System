@@ -11,7 +11,7 @@ def connect_db():
         host="localhost",
         database="rfid_monitoramento",
         user="postgres",
-        password="141105" 
+        password="123456" 
     )
 
 def registrar_log(cursor, tipo, tag_rfid, status, mensagem, nome=None, matricula=None):
