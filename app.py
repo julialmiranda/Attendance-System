@@ -11,7 +11,7 @@ def connect_db():
         host="localhost",
         database="rfid_monitoramento",
         user="postgres",
-        password="123456" 
+        password="141105" 
     )
 
 def registrar_log(cursor, tipo, tag_rfid, status, mensagem, nome=None, matricula=None):
@@ -130,7 +130,7 @@ def rfid():
 
         if status_matricula != "ATIVA":
             registrar_log(cursor, "MATRICULA INATIVA", tag_rfid, "NEGADO",
-                          f"Matrícula com status {status_matricula}", nome, matricula)
+                          status_matricula, nome, matricula)
             conn.commit()
             return jsonify({
                 "status": "MATRICULA_INATIVA",
@@ -405,6 +405,7 @@ def criar_aluno():
     curso = dados.get("curso")
     professor_id = dados.get("professor_id")
     tag_rfid = dados.get("tag_rfid")
+    status_matricula = dados.get("status_matricula", "ATIVA")
 
     if not nome or not matricula or not tag_rfid or not curso or not professor_id:
         return jsonify({
@@ -419,9 +420,9 @@ def criar_aluno():
         cursor.execute("""
             INSERT INTO alunos
             (nome, matricula, curso, professor_id, tag_rfid, acesso, ativo, status_matricula)
-            VALUES (%s, %s, %s, %s, %s, TRUE, TRUE, 'ATIVA')
+            VALUES (%s, %s, %s, %s, %s, TRUE, TRUE, %s)
             RETURNING id
-        """, (nome, matricula, curso, professor_id, tag_rfid))
+        """, (nome, matricula, curso, professor_id, tag_rfid, status_matricula))
 
         novo_id = cursor.fetchone()[0]
         conn.commit()
@@ -729,12 +730,14 @@ def editar_aluno(id):
             SET
                 nome = %s,
                 matricula = %s,
-                tag_rfid = %s
+                tag_rfid = %s,
+                status_matricula = %s
             WHERE id = %s
         """, (
             dados["nome"],
             dados["matricula"],
             dados["tag_rfid"],
+            dados["status_matricula"],
             id
         ))
 

@@ -180,6 +180,16 @@
         <div class="field"><label>RFID Tag</label><input type="text" id="aluno-rfid" placeholder="A1B2C3D4" /></div>
       </div>
       <div class="field"><label>Nome Completo</label><input type="text" id="aluno-nome" placeholder="Nome do aluno" /></div>
+      <div class="form-group">
+        <label for="aluno-status-matricula">Status da Matrícula</label>
+        <select id="aluno-status-matricula" class="input-select">
+            <option value="ATIVA">Ativa</option>
+            <option value="TRANCADA">Trancada</option>
+            <option value="FORMADO">Formado</option>
+            <option value="CANCELADA">Cancelada</option>
+            <option value="TRANSFERIDO">Transferido</option>
+        </select>
+    </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="fecharModal('modal-aluno')">Cancelar</button>

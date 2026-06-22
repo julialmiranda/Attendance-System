@@ -70,6 +70,14 @@ async function carregarLogsRFID() {
       return;
     }
 
+    const statusMatriculaLabel = {
+      TRANCADA: "Trancada",
+      FORMADO: "Formado",
+      CANCELADA: "Cancelada",
+      TRANSFERIDO: "Transferido",
+      EVADIDO: "Evadido"
+    };
+
     container.innerHTML = logs.slice(0, 8).map(log => {
       const statusCor = log.status === "LIBERADO" || log.status === "REGISTRADO"
         ? "#1A8754"
@@ -78,6 +86,11 @@ async function carregarLogsRFID() {
       const nome = log.nome || "Tag não cadastrada";
       const matricula = log.matricula || "-";
 
+      const tituloLog =
+        log.tipo === "MATRICULA INATIVA"
+          ? (log.mensagem || "").replace("Matrícula com status ", "")
+          : log.tipo;
+          
       return `
         <div style="
           display:flex;
@@ -91,18 +104,26 @@ async function carregarLogsRFID() {
             <strong>${nome}</strong>
             <div style="color:#64748B;font-size:12px;">
               Matrícula: ${matricula} · TAG: ${log.tag_rfid}
-              ${log.tipo === "SAIDA" && log.mensagem ? `
-                <div class="saida-resumo">
-                <span class="pill-presenca">Presenças: ${extrairPresencas(log.mensagem)}</span>
-                <span class="pill-falta">Faltas: ${extrairFaltas(log.mensagem)}</span>
-              </div>
-              `: ""
-            }
+
+              ${
+                log.tipo === "SAIDA" && log.mensagem
+                  ? `
+                    <div class="saida-resumo">
+                      <span class="pill-presenca">
+                        Presenças: ${extrairPresencas(log.mensagem)}
+                      </span>
+                      <span class="pill-falta">
+                        Faltas: ${extrairFaltas(log.mensagem)}
+                      </span>
+                    </div>
+                  `
+                  : ""
+              }
             </div>
           </div>
 
           <div style="text-align:right;">
-            <strong style="color:${statusCor};">${log.tipo}</strong>
+            <strong style="color:${statusCor};">${tituloLog}</strong>
             <div style="color:#64748B;font-size:12px;">
               ${log.status} · ${formatarHora(log.timestamp)}
             </div>
@@ -257,6 +278,7 @@ function editarAluno(id) {
   document.getElementById('aluno-mat').value=a.matricula;
   document.getElementById('aluno-nome').value=a.nome;
   document.getElementById('aluno-rfid').value=a.rfid;
+  document.getElementById('aluno-status-matricula').value = a.status_matricula || 'ATIVA';
   abrirModal('modal-aluno');
 }
 
@@ -264,6 +286,7 @@ async function salvarAluno() {
   const nome = document.getElementById('aluno-nome').value.trim();
   const mat = document.getElementById('aluno-mat').value.trim();
   const rfid = document.getElementById('aluno-rfid').value.trim();
+  const statusMatricula = document.getElementById('aluno-status-matricula').value;
 
   if (!nome || !mat || !rfid) {
     toast('Preencha nome, matrícula e RFID.', 'error');
@@ -273,27 +296,30 @@ async function salvarAluno() {
   try {
     if (editandoId) {
       await api.editarAluno(editandoId, {
-      nome,
-      matricula: mat,
-      tag_rfid: rfid
-    });
-    await carregarDadosAlunos();
+        nome,
+        matricula: mat,
+        tag_rfid: rfid,
+        status_matricula: statusMatricula
+      });
 
-    renderTabela();
-    atualizarStats();
+      await carregarDadosAlunos();
 
-    toast('Aluno atualizado.', 'success');
+      renderTabela();
+      atualizarStats();
 
-    fecharModal('modal-aluno');
-    return;
-  }
+      toast('Aluno atualizado.', 'success');
+
+      fecharModal('modal-aluno');
+      return;
+    }
 
     const novoAluno = {
       nome,
       matricula: mat,
       curso: profAtual.curso,
       professor_id: profAtual.id,
-      tag_rfid: rfid
+      tag_rfid: rfid,
+      status_matricula: statusMatricula
     };
 
     await api.criarAluno(novoAluno);
